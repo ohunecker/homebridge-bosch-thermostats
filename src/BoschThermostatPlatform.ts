@@ -7,6 +7,7 @@ import {BoschSmartHomeBridge, BoschSmartHomeBridgeBuilder, BshbUtils } from 'bos
 
 import BoschThermostatAccessory from './BoschThermostatAccessory'
 import BoschThermostat from './BoschThermostat'
+import { runInThisContext } from 'vm';
 
 const fs = require('fs')
 
@@ -55,13 +56,8 @@ export default class BoschThermostatPlatform implements DynamicPlatformPlugin {
 
 
 	didFinishLaunching() {
-		this.log.info('connecting to host ' + this.config.host + ' using systemPassword ' + this.config.systemPassword)
+		this.log.info('connecting to host ' + this.config.host + ' using password from config-file')
 		this.loadCertificate(this.config.certificatePath, this.config.privateKeyPath)
-
-
-		
-
-
 	}
 
 	establishConnection() {
@@ -80,13 +76,17 @@ export default class BoschThermostatPlatform implements DynamicPlatformPlugin {
 			console.log(err);
 			return EMPTY;
 		}), switchMap(pairingResponse => {
-			console.log("Pairing result:");
 			if (pairingResponse) {
-				console.log("Pairing successful");
+				this.log.info("Pairing result: successful");
+				/*
+				 * Avoid log-spamming with request and response informations
+				 */
+				/*
 				console.log(pairingResponse.incomingMessage.statusCode);
 				console.log(pairingResponse.parsedResponse);
+				*/
 			} else {
-				console.log("Already paired");
+				this.log.info("Pairing result: Already paired");
 			}
 
 			return this.bshb.getBshcClient().getDevices();
@@ -129,8 +129,6 @@ export default class BoschThermostatPlatform implements DynamicPlatformPlugin {
  
 			}
 		}
-	
-		
 	}
 
 	updateValues() {
@@ -148,7 +146,7 @@ export default class BoschThermostatPlatform implements DynamicPlatformPlugin {
 							this.boschThermostats[i].currentTemperature = propertiesForDevice[j].state.temperature
 						break;
 						case 'RoomClimateControl':
-
+							
 							this.boschThermostats[i].targetTemperature = propertiesForDevice[j].state.setpointTemperature
 
 						break;
