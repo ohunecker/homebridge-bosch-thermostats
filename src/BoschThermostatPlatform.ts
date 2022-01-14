@@ -7,7 +7,6 @@ import {BoschSmartHomeBridge, BoschSmartHomeBridgeBuilder, BshbUtils } from 'bos
 
 import BoschThermostatAccessory from './BoschThermostatAccessory'
 import BoschThermostat from './BoschThermostat'
-import { runInThisContext } from 'vm';
 
 const fs = require('fs')
 
@@ -72,8 +71,7 @@ export default class BoschThermostatPlatform implements DynamicPlatformPlugin {
 
 
 		this.bshb.pairIfNeeded('bshb', "homebridge", this.config.systemPassword).pipe(catchError(err => {
-			console.log("Test Result error:");
-			console.log(err);
+			this.log.error("Test Result error:", err);
 			return EMPTY;
 		}), switchMap(pairingResponse => {
 			if (pairingResponse) {
